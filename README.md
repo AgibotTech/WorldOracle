@@ -27,6 +27,7 @@
 - **[LeaderBoard Submission](#leaderboard-submission)**
    - [Submission Registration](#submission-registration)
    - [Validation Sets](#validation-sets)
+   - [Testset](#testset)
    - [Submission](#submission)
 
 ## Overview
@@ -423,9 +424,7 @@ for the complete approval and sign-in workflow.
 ### Validation Sets
 
 Download the validation release from the
-[AgiBot World datasets on Hugging Face](https://huggingface.co/agibot-world/datasets).
-The dataset-specific WorldOracle link will replace this organization-level
-entry when the validation repository is made public.
+[WorldOracle validation dataset on Hugging Face](https://huggingface.co/datasets/WorldOracle/worldoracle-validation).
 
 The current AgiBot G2 validation split contains:
 
@@ -460,6 +459,14 @@ Run your model on `inference/`, generate predictions with the same
 validation GT. Use these results to verify temporal alignment, view
 synchronization, output quality, and packaging before submitting predictions
 for the withheld leaderboard test set.
+
+### Testset
+
+Download the test-set inference release from the
+[WorldOracle test set on Hugging Face](https://huggingface.co/datasets/WorldOracle/worldoracle-testset).
+The release contains the inputs required to generate leaderboard submissions;
+test-set ground truth remains private and is evaluated by the WorldOracle
+evaluation service.
 
 ### Submission
 

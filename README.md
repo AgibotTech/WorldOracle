@@ -506,9 +506,7 @@ Package limits are **3 GiB** for Main Track, **3 GiB** for Policy Track, and
 and its declared expanded contents. Never include GT data, credentials,
 checkpoints, caches, or unrelated experiment outputs.
 
-The portal uploads verified 16 MiB chunks over up to six resumable lanes,
-validates the package, and then places a confirmed submission in the automatic
-evaluation queue. See the
+See the
 [package and submission guide](https://worldoracle-benchmark.github.io/submission/#prepare)
 for the manifest example, required FFmpeg profile, ZIP command, local checks,
 and the complete four-step submission workflow.

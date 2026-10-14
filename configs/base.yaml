@@ -1,0 +1,235 @@
+# === ACWMBench base config ===
+# Replace the placeholders below with paths on your own machine.
+
+save_path: ./output                                    # aggregate CSV/reports go here
+
+# Runtime hardware profile. ``auto_detect`` validates these hints against the
+# CUDA device and its actual VRAM at startup; explicit per-dimension execution
+# values always win. The default is tuned conservatively for one RTX 4090.
+hardware:
+  gpu_profile: rtx_4090
+  auto_detect: true
+  memory_utilization_target: 0.85
+
+data:
+  # Ground-truth data: <task_id>/<episode_id>/{prompt,video,...}
+  gt_path: /path/to/main-ground-truth
+  # Prediction-side data: <task_id>/<episode_id>/{video,...}
+  # Legacy <task_id>/<episode_id>/<trial_id>/{video,...} is also supported.
+  # Judge self-check: point val_base at the SAME tree as gt_path so the
+  # judge re-scores the ground-truth frames the criteria were authored from
+  # (a perfect judge/criteria pair should reach criterion_accuracy == 1.0).
+  val_base: /path/to/model-predictions
+  # GT profiles are orthogonal to the evaluated world model. Select one with
+  # evaluate.py --distribution and provide predictions with --val-base.
+  distributions:
+    human_operated:
+      gt_path: /path/to/main-ground-truth
+    yam:
+      gt_path: /path/to/yam-ground-truth
+    policy_rollout:
+      gt_path: /path/to/policy-ground-truth
+  # Offline policy scoring uses this GT prompt tree for key_frame,
+  # success_criteria, grounding_objects, and the first-frame reference.
+  policy_gt_path: /path/to/policy-ground-truth
+  # Per-world-model task configs set policy_val_base to:
+  # <model>/<task>/<episode>/<rollout>/{meta.json,video/...}
+  # Its presence makes evaluate.py run policy_eval in wm_score mode.
+
+# Per-dimension settings.
+dimensions:
+  # === KeyArea Visual Quality ===
+  # Computes masked PSNR / LPIPS / V-JEPA similarity between generated and GT frames, restricted to
+  # the key-area mask sequences in prompt/masks.npz
+  # (key "masks", shape (M, T, H, W); a legacy prompt/masks.npy is also accepted).
+  # Each generated frame is resized to the mask resolution, cropped to the mask
+  # bounding box, and its background zeroed out before comparison. It evaluates
+  # both prompt/masks.npz (field name: object) and
+  # multiview_masks/top_head/masks.npz (field name: robot_arm). Masks are averaged
+  # within each source per frame; the two source means are then averaged per frame;
+  # the episode score is the mean of those combined frame values.
+  keyarea_visual_quality:
+    eval_view: top_head                  # which camera view to load from video/<view>/
+    secondary_mask_view: top_head        # multiview_masks/<view>/masks.npz
+    # Parallel execution changes throughput only; metric preprocessing and
+    # aggregation remain numerically equivalent to serial mode.
+    execution:
+      mode: pipeline                     # serial | pipeline
+      episode_workers: auto              # CPU frame/mask loading + preprocessing
+      max_in_flight_episodes: auto        # bounds host-memory usage
+      prefetch_depth: auto
+      vjepa_batch_size: auto              # 4090 profile starts at 32 pairs
+      lpips_batch_size: auto              # exact-HxW buckets only
+      pin_memory: true
+    # Temporal stride: compute PSNR/LPIPS/V-JEPA on every k-th frame.
+    #   1  → every frame (slowest, most accurate)
+    #   4  → every 4th frame (~4x speedup, recommended for long episodes)
+    #   8+ → coarse-grained sanity passes
+    downsample_rate: 10
+    # Crop each frame + mask to the mask bounding box (+pad) before masking, so
+    # the shared black background no longer dilutes the scores.
+    crop_to_bbox: true
+    bbox_pad: 10
+    # LPIPS uses an AlexNet backbone with repeated pooling. Expand narrow/tiny
+    # mask boxes to at least this height and width to avoid zero-sized features.
+    lpips_min_crop_size: 64
+    # Expand both object and robot-arm masks outwards before cropping and scoring.
+    # 0 disables dilation; 5 adds a five-pixel margin around each mask region.
+    mask_dilation_pixels: 5
+    # Compute PSNR over the masked pixels only (true pixel-level masked PSNR).
+    mask_aware_psnr: true
+    # V-JEPA compares the same cropped, black-background mask inputs as LPIPS.
+    vjepa:
+      model_name: vjepa2_1_vit_base_384
+      model_path: ./ckpt/vjepa2/vjepa2_1_vitb_dist_vitG_384.pt
+      repo: ./third_party/vjepa2  # local torch.hub source; avoids network fetches
+    # Optional frame rate; when set, per-frame records also carry time_sec.
+    # fps: 30
+    # With --visualize: how many frames per episode to dump panels for
+    # (gt frame | pred frame | mask | cropped-masked gt | cropped-masked pred).
+    # Per-source contact sheets and a JSON manifest are also saved under
+    # <data.val_base>/<task>/<episode>/visualize/.
+    visualize_max_frames: 8
+
+  # === Interaction Spatial Alignment ===
+  # Uses GT object/robot-arm masks as DINOv3 feature templates, then searches
+  # the full generated frame for mutual nearest-neighbour patch matches.
+  # alignment_score = 100 * distance_score *
+  #                   confidence_quality_score^alignment_confidence_power
+  interaction_spatial_alignment:
+    eval_view: top_head
+    downsample_rate: 10
+    fps: 30
+    # Bounded CPU decode -> single-GPU DINO -> CPU matching pipeline.
+    # Batch shape/fusion are cache identity because they can flip near-tied
+    # DINO matches; worker counts and prefetch depth affect throughput only.
+    execution:
+      mode: pipeline
+      frame_batch_size: auto
+      loader_workers: auto
+      prefetch_batches: auto
+      matcher_workers: auto
+      pin_memory: true
+      fuse_gt_generated: auto
+    model_name: dinov3_vitb16
+    checkpoint: ./ckpt/dinov3/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth
+    # Use the already cloned repository to avoid a Torch Hub network download.
+    # Set to null to load facebookresearch/dinov3 from GitHub instead.
+    dinov3_repo: ./third_party/dinov3
+    min_mask_patches: 2
+    min_mutual_matches: 3
+    inlier_radius_px: 32.0
+    confidence_bias: -2.0
+    confidence_cosine_weight: 3.0
+    confidence_margin_weight: 8.0
+    confidence_mutual_weight: 1.5
+    confidence_inlier_weight: 1.5
+    match_support_target_ratio: 0.3
+    match_support_count_scale: 8.0
+    match_support_power: 1.0
+    # Explicit score anchors: confidence >= good and distance <= good map to 1;
+    # confidence <= bad and distance >= bad map to 0.
+    confidence_bad: 0.5
+    confidence_good: 0.8
+    distance_good_px: 30.0
+    distance_bad_px: 150.0
+    alignment_confidence_power: 3.0
+
+  # === Multi-View Consistency ===
+  # Reuses top_head robot-arm alignment from interaction_spatial_alignment.json,
+  # computes only hand_left / hand_right with the source Interaction settings,
+  # batches both hand views in one bounded loader/GPU/matcher pipeline, then
+  # averages the three view scores per frame. There is no threshold gate.
+  multiview_consistency:
+    # Throughput-only settings. frame_batch_size and fuse_gt_generated are
+    # overridden by the source Interaction result to preserve score identity.
+    execution:
+      mode: pipeline
+      frame_batch_size: auto
+      loader_workers: auto
+      prefetch_batches: auto
+      matcher_workers: auto
+      pin_memory: true
+      fuse_gt_generated: auto
+
+  # === Policy Evaluation Ability ===
+  # wm_generate reads episode RGB/timing directly from the policy input tree and
+  # task state/instruction from initial_states.yaml. When a task config defines
+  # data.policy_val_base, evaluate.py selects wm_score automatically, reads
+  # prompts from data.policy_gt_path, and writes one Physical-Judge-compatible
+  # policy_eval.json per episode, keyed by rollout ID, for resume-safe scoring.
+  # paired_fidelity keeps the legacy real-vs-WM analysis.
+  #
+  # Layout:
+  # <rollout_root>/<world_model>/<task>/<init>/{0,1,2,...}/
+  #   meta.json, actions.npy, states.npy, video/<view>/frame_*.png
+  # A rollout may provide physical_judge.json to skip VLM inference. Otherwise
+  # the VLM and judge settings from physical_judge below are reused.
+  policy_eval:
+    mode: wm_generate                      # wm_generate | wm_score | paired_fidelity
+    dataset_root: /path/to/policy-inputs
+    gt_root: /path/to/policy-ground-truth
+    initial_states_path: ./configs/states/initial_states.yaml
+    rollout_root: /path/to/policy-rollouts
+    policy:
+      policy_id: pi05_agibot_51000
+      server_url: ws://127.0.0.1:8000
+      checkpoint: /path/to/policy-checkpoint
+      action_horizon: 50
+      timeout_sec: 300
+    world_model:
+      world_model_id: gesim_g02_14000
+      server_url: http://127.0.0.1:9000
+      # Must match the G02 checkpoint passed to the WM server.
+      checkpoint: /path/to/world-model-checkpoint
+      chunk_size: 25
+      wire_action_layout: policy             # GE-Sim HTTP service expects PI layout
+      # Legacy key name: true means execute policy_actions[:chunk_size] and
+      # replan. It does not average/resample the full policy horizon.
+      compress_actions: true
+      timeout_sec: 900
+    rollout_number: 3
+    state_source: commanded               # commanded | acwm_predicted
+    threshold: 0.5
+    bootstrap_samples: 1000
+    bootstrap_seed: 0
+    # Optional overrides for physical_judge settings:
+    # judge:
+    #   eval_view: top_head
+    #   n_fallback_keysteps: 1
+
+  physical_judge:
+    # View to evaluate. For this benchmark, physical status is judged on top-head frames.
+    eval_view: top_head
+    # Episode-level API concurrency. Each worker owns an independent client;
+    # local transformers backends are automatically forced to one worker.
+    execution:
+      api_workers: 2
+    # How many checkpoints to evaluate when no `keysteps.json` is provided.
+    # `1` means only the final frame; bump to 3-5 for long-horizon tasks.
+    n_fallback_keysteps: 1
+    # Clamp image long-side before sending to the VLM (helps fit on 24GB).
+    max_image_long_side: 768
+    # Retry the same keyframe if the VLM returns empty / non-JSON / wrong-length 0/1 arrays.
+    format_retries: 3
+    # Retry transient API/network failures (connection reset, timeout, 5xx, etc).
+    # Total attempts = api_retries + 1; delay = api_retry_backoff * 2**attempt_index.
+    api_retries: 5
+    api_retry_backoff: 2.0
+
+    # OpenAI-compatible Physical Judge. Set OPENAI_API_KEY in the environment,
+    # replace the endpoint placeholder, and keep GPT-5.6 Luna for benchmark
+    # comparability. The same block is available as a standalone override in
+    # configs/tasks/openai_compatible_example.yaml.
+    vlm:
+      backend: openai
+      model_path: ""
+      base_url: https://your-openai-compatible-endpoint.example/v1
+      served_model_name: gpt-5.6-luna
+      api_key_env: OPENAI_API_KEY
+      request_timeout: 180
+      max_new_tokens: 2048
+      temperature: 1.0
+      top_p: 1.0
+      disable_thinking: true
+      max_image_long_side: 768

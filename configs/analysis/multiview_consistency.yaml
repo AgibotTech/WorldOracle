@@ -1,0 +1,7 @@
+# Only these baselines provide the three generated camera views required by
+# DINOv3 Multi-View Consistency (top_head, hand_left, hand_right).
+baselines:
+  CtrlWorld: ./data/eval_workspace/ctrlworld
+  GESim: ./data/eval_workspace/gesim_g02_dmd_14000
+
+output_dir: output/multiview_consistency_analysis

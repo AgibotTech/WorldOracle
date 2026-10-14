@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Environments and credentials
+.env
+.env.*
+.venv/
+venv/
+.secrets/
+
+# Datasets, checkpoints, and vendored repositories
+data/*
+!data/README.md
+ckpt/
+third_party/*
+!third_party/vjepa2/
+!third_party/README.md
+third_party/vjepa2/notebooks/*.npz
+._*
+
+# Evaluation outputs and local workspaces
+output/
+.smoke/
+tmp_sync/
+**/visualize/
+*.log
+nohup.out
+*.pid
+*.tmp
+
+# Large research scratch assets
+scripts/*.npy
+scripts/*.npz
+scripts/*.ply
+scripts/pulldrawer/
+scripts/pulldrawer_old/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/

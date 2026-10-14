@@ -1,0 +1,20 @@
+# Analyze completed per-episode Physical Judge results across four baselines.
+baselines:
+  Cosmos3-G02: ./data/eval_workspace/cosmos3
+  CtrlWorld: ./data/eval_workspace/ctrlworld
+  DreamDojo: ./data/eval_workspace/dreamdojo
+  IRASim: ./data/eval_workspace/irasim
+
+# Only current, successfully completed trial records are analyzed.
+minimum_metric_version: 1
+require_complete_status: true
+
+bootstrap_samples: 1000
+seed: 20260729
+
+# Generated keyframe timing. Bin intervals are left-closed/right-open:
+# [0, 10), [10, 20), [20, 30), ...
+fps: 30
+temporal_bin_seconds: 10
+
+output_dir: output/physical_judge_results_analysis

@@ -1,0 +1,5 @@
+# Full closed-loop generation: all discovered episodes unless CLI-filtered.
+dimensions:
+  policy_eval:
+    mode: wm_generate
+    rollout_number: 3

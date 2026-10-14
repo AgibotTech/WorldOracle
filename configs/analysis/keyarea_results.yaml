@@ -1,0 +1,29 @@
+# Analyze completed stride-10 KeyArea v12 PSNR/LPIPS/V-JEPA results in-place.
+baselines:
+  Cosmos3-G02: ./data/eval_workspace/cosmos3
+  CtrlWorld: ./data/eval_workspace/ctrlworld
+  DreamDojo: ./data/eval_workspace/dreamdojo
+  IRASim: ./data/eval_workspace/irasim
+
+expected_downsample_rate: 10
+minimum_metric_version: 12
+
+# Original video timing. Frame IDs in per_frame remain pre-downsampling IDs.
+fps: 30
+temporal_bin_seconds: 10
+# Cumulative baseline comparisons use frames in [0, end_sec).
+cumulative_end_seconds: [10, 20, 30, 40, 50, 60]
+
+# Per-frame, per-source normalization anchors.
+normalization:
+  psnr:
+    min: 8.0
+    max: 30.0
+  lpips:
+    min: 0.1
+    max: 0.35
+  vjepa_similarity:
+    min: 0.97
+    max: 1.0
+
+output_dir: output/keyarea_stride10_results_analysis

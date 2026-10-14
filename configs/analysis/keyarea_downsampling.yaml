@@ -1,0 +1,58 @@
+# Offline KeyArea downsampling analysis.
+# Run on the server after all four roots contain stride=1
+# keyarea_visual_quality.json files.
+
+baselines:
+  Cosmos3-G02: ./data/eval_workspace/cosmos3
+  CtrlWorld: ./data/eval_workspace/ctrlworld
+  DreamDojo: ./data/eval_workspace/dreamdojo
+  IRASim: ./data/eval_workspace/irasim
+
+# Stride 1 is the full-frame reference. Other rates are simulated by selecting
+# frame indices divisible by the stride from the existing per-mask records.
+strides: [1, 5, 10, 20, 30, 40, 50, 60, 80, 100]
+
+# Flexible 0-100 normalization anchors. PSNR and V-JEPA are higher-is-better;
+# LPIPS is lower-is-better. Object and robot-arm values are normalized independently
+# per frame and combined with a geometric mean. Each source is averaged over
+# time, then the two source quality scores are averaged equally.
+normalization:
+  psnr:
+    min: 8.0
+    max: 30.0
+  lpips:
+    min: 0.1
+    max: 0.35
+  vjepa_similarity:
+    min: 0.97
+    max: 1.0
+
+# Used only to map original frame indices to temporal analysis windows.
+fps: 30
+temporal_bin_seconds: 10
+
+output_dir: output/keyarea_downsampling_analysis
+correlation_threshold: 0.98
+
+# Conservative stride recommendation. Correlation preserves trends; CCC and
+# absolute-error limits additionally require numerical agreement with stride=1.
+# Requiring every smaller stride to pass avoids selecting a lucky aliased rate
+# after an earlier rate has already failed.
+recommendation:
+  pearson_min: 0.99
+  spearman_min: 0.99
+  ccc_min: 0.99
+  mae_max: 0.5
+  rmse_max: 0.6
+  p95_abs_error_max: 1.0
+  max_abs_error_max: 2.0
+  abs_mean_bias_max: 0.5
+  baseline_pairwise_agreement_min: 1.0
+  require_all_smaller_strides_pass: true
+
+bootstrap_samples: 1000
+distribution_sample_limit: 200000
+# Exact masked matches produce PSNR=Infinity; use a finite analysis cap so they
+# remain high-quality observations instead of being dropped from correlations.
+psnr_inf_cap: 100.0
+seed: 20260728

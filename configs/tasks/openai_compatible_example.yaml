@@ -1,0 +1,22 @@
+# OpenAI-compatible Physical Judge configuration.
+#
+# Set OPENAI_API_KEY in the environment before running. Replace base_url with
+# the endpoint supplied by your API provider. The benchmark model used for the
+# released Physical Judge evaluation is GPT-5.6 Luna.
+
+dimensions:
+  physical_judge:
+    execution:
+      api_workers: 8
+    vlm:
+      backend: openai
+      model_path: ""
+      base_url: https://your-openai-compatible-endpoint.example/v1
+      served_model_name: gpt-5.6-luna
+      api_key_env: OPENAI_API_KEY
+      request_timeout: 180
+      max_new_tokens: 2048
+      temperature: 1.0
+      top_p: 1.0
+      disable_thinking: true
+      max_image_long_side: 768

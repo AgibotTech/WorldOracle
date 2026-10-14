@@ -1,0 +1,13 @@
+# Per-model override config for ACWMBench.
+#
+# The base config (configs/base.yaml) is always loaded first; this file is
+# deep-merged on top. Keep it minimal: usually just the prediction-side data
+# path for one model's outputs, so different models can be evaluated with:
+#
+#   python evaluate.py --dimension physical_judge --config_path configs/tasks/cosmos3.yaml
+#
+# Everything else (gt_path, dimensions, vlm, thresholds, ...) is inherited from
+# configs/base.yaml. Add other overrides here only when this model needs them.
+
+data:
+  val_base: /path/to/model-predictions

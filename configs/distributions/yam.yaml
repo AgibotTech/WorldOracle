@@ -1,0 +1,7 @@
+# YAM human-operated distribution profile.
+# Select the model predictions at runtime with:
+#   --distribution yam --val-base <model_predictions>
+# API provider settings are inherited from configs/base.yaml or supplied with
+# --po-config-path configs/tasks/openai_compatible_example.yaml.
+
+dimensions: {}

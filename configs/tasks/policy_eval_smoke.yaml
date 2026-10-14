@@ -1,0 +1,6 @@
+# One complete rollout for the selected GT episode.
+# Task and episode are selected on the evaluate.py command line.
+dimensions:
+  policy_eval:
+    mode: wm_generate
+    rollout_number: 1

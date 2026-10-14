@@ -1,0 +1,7 @@
+# Policy-rollout distribution profile.
+# GT and prediction paths are selected at runtime with:
+#   --distribution policy_rollout --val-base <model_predictions>
+# API provider settings are inherited from configs/base.yaml or supplied with
+# --po-config-path configs/tasks/openai_compatible_example.yaml.
+
+dimensions: {}

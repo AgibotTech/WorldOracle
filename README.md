@@ -161,6 +161,13 @@ placeholder with the URL supplied by your provider, and retain the released
 model and decoding settings for benchmark comparability. Pass this file as
 `--po-config-path` to the submission executor. Never commit credentials.
 
+The paper reports its metrics using **GPT-5.5** as the VLM evaluator. For the
+live Leaderboard, every baseline was re-evaluated on the deployment service
+with **GPT-5.6 Luna**, and automated evaluation of all new Leaderboard
+submissions also uses **GPT-5.6 Luna**. This keeps live Leaderboard entries
+comparable with one another; paper and Leaderboard values may differ because
+they use different evaluator versions.
+
 Example:
 
 ```bash

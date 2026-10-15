@@ -510,3 +510,16 @@ See the
 [package and submission guide](https://worldoracle-benchmark.github.io/submission/#prepare)
 for the manifest example, required FFmpeg profile, ZIP command, local checks,
 and the complete four-step submission workflow.
+
+## Citation
+
+If you find WorldOracle useful in your research, please consider citing our paper:
+
+```bibtex
+@article{duan2026worldoracle,
+  title={WorldOracle: Benchmarking Action-Conditioned World Models against Real-World Executions},
+  author={Duan, Haoyi and Chen, Liliang and Wang, Nan and Zhang, Yang and Lu, Yuhang and Chen, Xiaotong and Tseng, Wei-Cheng and Gao, Shenyuan and Li, Zhaoshuo and Jin, Jingyi and others},
+  journal={arXiv preprint arXiv:2610.18826},
+  year={2026}
+}
+```

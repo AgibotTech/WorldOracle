@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://worldoracle-benchmark.github.io/"><img alt="Project Page" src="https://img.shields.io/badge/%F0%9F%8C%90_PROJECT_PAGE-VISIT-137CBD?style=for-the-badge"></a>
-  <img alt="arXiv Paper" src="https://img.shields.io/badge/ARXIV-PAPER-B31B1B?style=for-the-badge&amp;logo=arxiv&amp;logoColor=B31B1B">
+  <a href="https://arxiv.org/abs/2610.18826"><img alt="arXiv Paper" src="https://img.shields.io/badge/ARXIV-PAPER-B31B1B?style=for-the-badge&amp;logo=arxiv&amp;logoColor=B31B1B"></a>
   <a href="https://huggingface.co/WorldOracle"><img alt="WorldOracle datasets on Hugging Face" src="https://img.shields.io/badge/HUGGING_FACE-DATASET-FFD21E?style=for-the-badge&amp;logo=huggingface&amp;logoColor=FFD21E"></a>
   <a href="https://worldoracle-benchmark.github.io/leaderboard.html"><img alt="WorldOracle Leaderboard" src="https://img.shields.io/badge/%F0%9F%8F%86_LEADERBOARD-VIEW-0A7EA4?style=for-the-badge"></a>
 </p>

@@ -30,6 +30,7 @@
    - [Validation Sets](#validation-sets)
    - [Testset](#testset)
    - [Submission](#submission)
+- **[Contact Us](#contact-us)**
 - **[Citation](#citation)**
 
 ## Overview
@@ -511,6 +512,15 @@ See the
 [package and submission guide](https://worldoracle-benchmark.github.io/submission/#prepare)
 for the manifest example, required FFmpeg profile, ZIP command, local checks,
 and the complete four-step submission workflow.
+
+## Contact Us
+
+You're welcome to join our WeChat group to discuss WorldOracle, share feedback,
+and ask questions.
+
+<p align="center">
+  <img src="assets/wechat-group-qr.jpg" alt="WorldOracle WeChat group QR code" width="260">
+</p>
 
 ## Citation
 
